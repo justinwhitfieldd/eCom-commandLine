@@ -10,6 +10,7 @@ class Order:
         self.items = []
         self.total_price = 0.0
         self.timestamp = ""
+        self.create_tables()
 
     def add_order(self, items: List[Dict], total_price: float) -> None:
         self.items = items
@@ -48,3 +49,32 @@ class Order:
             return {"order_id": order[0], "total_price": order[2], "timestamp": order[3], "items": items}
 
         return None
+
+    def create_tables(self) -> None:
+        cur = self.conn.cursor()
+
+        # Create orders table if it doesn't exist
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                orderID INTEGER PRIMARY KEY AUTOINCREMENT,
+                userID INTEGER NOT NULL,
+                total_price REAL NOT NULL,
+                timestamp TEXT NOT NULL,
+                FOREIGN KEY (userID) REFERENCES customers (userID)
+            )
+        """)
+
+        # Create order_items table if it doesn't exist
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS order_items (
+                orderItemID INTEGER PRIMARY KEY AUTOINCREMENT,
+                orderID INTEGER NOT NULL,
+                itemID INTEGER NOT NULL,
+                quantity INTEGER NOT NULL,
+                price REAL NOT NULL,
+                FOREIGN KEY (orderID) REFERENCES orders (orderID),
+                FOREIGN KEY (itemID) REFERENCES items (itemID)
+            )
+        """)
+
+        self.conn.commit()
