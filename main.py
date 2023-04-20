@@ -3,7 +3,7 @@
 # files causes an import loop where the files depend on each other
 
 from userClass import User, con, cur
-
+from orders import *
 # Creating customer and shipping table if they do not exist
 cur.execute('''
     CREATE TABLE IF NOT EXISTS customers(
