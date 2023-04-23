@@ -19,10 +19,20 @@ class User:
         cur.execute("INSERT INTO customers(email, password, firstName, lastName) VALUES (?, ?, ?, ?)", (email, pwd, fname, lname,))
         con.commit()
 
-        print("Account Created!\n")
+        print("Account Created!")
 
-    # def deleteAccount(self):
-    #     blahblah
+    def deleteAccount(self):
+        pwd = input("\nEnter password to confirm account deletion: ")
+        cur.execute("SELECT password FROM customers WHERE userID = ?",(self.id,))
+        if pwd == cur.fetchone()[0]:
+            cur.execute("DELETE FROM customers WHERE userID = ?",(self.id,))
+            cur.execute("DELETE FROM shipping WHERE userID = ?",(self.id,))
+            con.commit()
+            self.id = None
+            self.loggedIn = False
+            print("Account has been deleted!")
+        else:
+            print("Incorrect password.")
     
     def logIn(self):
         print("\nEnter your email and password: ")
@@ -33,11 +43,11 @@ class User:
         self.id = cur.fetchone()
 
         if self.id == None:
-            print("\nEmail or password is incorrect.")
+            print("Email or password is incorrect.")
         else:
             # take it out of tuple so its easier to use in later queries
             self.id = self.id[0]
-            print("\nSuccessfully logged in!")
+            print("Successfully logged in!")
             self.loggedIn = True
 
     def logOut(self):
@@ -50,9 +60,9 @@ class User:
         fname = input("First Name: ")
         lname = input("Last Name: ")
 
-        cur.execute ("UPDATE customers SET firstName=?, lastName=? WHERE userID=?",(fname, lname, self.id,))
+        cur.execute("UPDATE customers SET firstName=?, lastName=? WHERE userID=?",(fname, lname, self.id,))
         con.commit()
-        print("Name has been updated!\n")
+        print("Name has been updated!")
 
     def resetPassword(self):
         cur.execute("SELECT password FROM customers WHERE userID=?",(self.id,))
@@ -64,3 +74,54 @@ class User:
             print("Password successfully changed!")
         else:
             print("Incorret password.")
+
+    def editShippingInfo(self):
+        # Display current user shipping info if they have any
+        cur.execute("SELECT address, city, state, zip FROM shipping WHERE userID = ?",(self.id,))
+        shipList = cur.fetchone()
+        if shipList == None:
+            print("\nYou do not currently have any shipping info.")
+        else:
+            print("\nYour current shipping info:", shipList[0], ",", shipList[1], ",", shipList[2], shipList[3])
+
+        # Prompt user to input new shipping info
+        print("Please enter your new address, city, state, and zip in that order.")
+        address = input("Address: ")
+        city = input("City: ")
+        state = input("State (e.g. 'MS'): ")
+        zip = input("Zip code (e.g. 39759): ")
+        
+        # Insert or update users row in shipping info table
+        cur.execute("SELECT userID FROM shipping WHERE userID = ?",(self.id,))
+        if cur.fetchone() == None:
+            cur.execute("INSERT INTO shipping(userID, address, city, state, zip) VALUES (?, ?, ?, ?, ?)",(self.id, address, city, state, zip,))
+        else:
+            cur.execute("UPDATE shipping SET address = ?, city = ?, state = ?, zip = ? WHERE userID = ?",(address, city, state, zip, self.id,))
+        con.commit()
+        
+        print("Shipping info updated!")
+
+    def editPaymentInfo(self):
+        # Display current user payment info if they have any
+        cur.execute("SELECT type, number, cvv FROM payment WHERE userID = ?",(self.id,))
+        payList = cur.fetchone()
+        if payList == None:
+            print("\nYou do not currently have any paymentinfo.")
+        else:
+            print("\nYour current shipping info:", payList[0], payList[1], payList[2])
+
+        # Prompt user to input new payment info
+        print("Please enter your payment type, card number, and CVV")
+        cardType = input("Card Type (Debit or Credit): ")
+        cardNum = input("Card Number: ")
+        cvv = input("CVV: ")
+
+        # Insert or update users row in payment info table
+        cur.execute("SELECT userID FROM payment WHERE userID = ?",(self.id,))
+        if cur.fetchone() == None:
+            cur.execute("INSERT INTO payment(userID, type, number, cvv) VALUES (?, ?, ?, ?)",(self.id, cardType, cardNum, cvv,))
+        else:
+            cur.execute("UPDATE payment SET type = ?, number = ?, cvv = ? WHERE userID = ?",(cardType, cardNum, cvv, self.id,))
+        con.commit()
+        
+        print("Payment info updated!")

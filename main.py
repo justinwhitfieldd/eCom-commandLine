@@ -4,7 +4,7 @@
 
 from userClass import User, con, cur
 
-# Creating customer and shipping table if they do not exist
+# Creating database tables if they do not exist
 cur.execute('''
     CREATE TABLE IF NOT EXISTS customers(
         userID integer PRIMARY KEY, 
@@ -22,6 +22,15 @@ cur.execute('''
         zip integer NOT NULL, 
         FOREIGN KEY(userID) REFERENCES customers(userID))
         ''')
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS payment(
+        userID integer, 
+        type text NOT NULL,
+        number integer NOT NULL,
+        cvv integer NOT NULL,
+        FOREIGN KEY(userID) REFERENCES customers(userID))
+        ''')
+
 
 
 exiting = False
@@ -54,7 +63,7 @@ def startMenu():
             print("Invalid option")
 
 def userSettings():
-    while (1):
+    while (user.loggedIn):
         # Menu
         print("\nSettings: ")
         print("1) Change name")
@@ -74,12 +83,12 @@ def userSettings():
             user.changeName()
         elif sel == 2:
             user.resetPassword()
-        # elif sel == 3:
-        #     blahblah
-        # elif sel == 4:
-        #     blahblah
-        # elif sel == 5:
-        #     blahblah
+        elif sel == 3:
+            user.editShippingInfo()
+        elif sel == 4:
+            user.editPaymentInfo()
+        elif sel == 5:
+            user.deleteAccount()
         # elif sel == 6:
         #     blahblah
         elif sel == 7:
@@ -88,7 +97,7 @@ def userSettings():
             print("Invalid option")
 
 def mainMenu():
-    while (1):
+    while (user.loggedIn):
         # Menu
         print("\nMain Menu:")
         print("1) View Item Catalog")
@@ -110,7 +119,6 @@ def mainMenu():
             userSettings()
         elif sel == 4:
             user.logOut()
-            break
         else:
             print("Invalid option")
 
@@ -123,8 +131,8 @@ while(1):
     else:
         startMenu()
 
-    if (user.loggedIn):
-        mainMenu()
+    # Main menu only loops while loggedIn = true
+    mainMenu()
 
 
 cur.close()
