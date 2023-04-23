@@ -3,6 +3,7 @@
 # files causes an import loop where the files depend on each other
 
 from userClass import User, con, cur
+from orders import *
 
 # Creating database tables if they do not exist
 cur.execute('''
