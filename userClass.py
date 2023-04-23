@@ -1,7 +1,5 @@
 # connect to sqlite and db file
-import sqlite3
-con = sqlite3.connect("./project.sqlite")
-cur = con.cursor()
+from sqlite import con, cur
 
 # User Class 
 class User:

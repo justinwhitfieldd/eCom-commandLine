@@ -1,8 +1,5 @@
-# connection to sqlite is currently in userClass.py
-# I wanted to do it in main but importing from main into other
-# files causes an import loop where the files depend on each other
-
-from userClass import User, con, cur
+from sqlite import con, cur
+from userClass import User
 from orders import *
 
 # Creating database tables if they do not exist
