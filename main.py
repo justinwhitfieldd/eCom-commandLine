@@ -3,8 +3,9 @@
 # files causes an import loop where the files depend on each other
 
 from userClass import User, con, cur
+from itemClass import Item
 from orders import *
-# Creating customer and shipping table if they do not exist
+# Creating customer, shipping, and inventory table if they do not exist
 cur.execute('''
     CREATE TABLE IF NOT EXISTS customers(
         userID integer PRIMARY KEY, 
@@ -21,6 +22,14 @@ cur.execute('''
         state text NOT NULL, 
         zip integer NOT NULL, 
         FOREIGN KEY(userID) REFERENCES customers(userID))
+        ''')
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS inventory(
+	    itemID integer PRIMARY KEY,
+	    itemName text NOT NULL,
+	    quantity integer NOT NULL,
+	    price real NOT NULL,
+	    desc text NOT NULL)
         ''')
 
 
@@ -101,12 +110,12 @@ def mainMenu():
         except ValueError:
             break
         # Selections
-        # if sel == 1:
-        #     blahblah
+        if sel == 1:
+            itemMenu()
         # elif sel == 2:
         #     blahblah
         # change below to elif after setting selection 1
-        if sel == 3:
+        elif sel == 3:
             userSettings()
         elif sel == 4:
             user.logOut()
@@ -114,7 +123,37 @@ def mainMenu():
         else:
             print("Invalid option")
 
+def itemMenu():
+    for i in inventory:
+        print(i)
+
+    while(1):
+        # Menu
+        print("\n---------------------")
+        print("Item Menu:")
+        print("1) Add Item to Cart")
+        print("2) Go Back")
+        # User Input
+        try:
+            sel = int(input("Enter your option: "))
+        except ValueError:
+            continue
+        # if sel == 1:
+            # addToCart()
+        if sel == 2:
+            break
+        else:
+            print("Invalid option")
+
+# def addToCart():
+
 user = User()
+inventory = []
+
+data = cur.execute('''SELECT * From inventory''')
+# data = data.fetchall
+for i in data:
+    inventory.append(Item(i[0], i[1], 1[2], i[3], i[4]))
 
 # Main program loop until user exits from startmenu
 while(1):
