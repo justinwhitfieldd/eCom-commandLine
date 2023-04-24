@@ -5,6 +5,7 @@
 from userClass import User, con, cur
 from itemClass import Item
 from orders import *
+from shoppingCart import *
 # Creating customer, shipping, and inventory table if they do not exist
 cur.execute('''
     CREATE TABLE IF NOT EXISTS customers(
@@ -31,7 +32,25 @@ cur.execute('''
 	    price real NOT NULL,
 	    desc text NOT NULL)
         ''')
+# create items if they do not already exist
+# Sample nuts
+sample_items = [
+    {"id": 1, "name": "Almonds", "quantity": 100, "price": 5.99, "desc": "Delicious and healthy almonds."},
+    {"id": 2, "name": "Cashews", "quantity": 80, "price": 6.99, "desc": "Crunchy and tasty cashews."},
+    {"id": 3, "name": "Pistachios", "quantity": 120, "price": 7.99, "desc": "Nutritious and flavorful pistachios."},
+    {"id": 4, "name": "Walnuts", "quantity": 60, "price": 8.99, "desc": "Fresh and high-quality walnuts."},
+]
 
+for item_data in sample_items:
+    cur.execute("SELECT * FROM Inventory WHERE itemID=?", (item_data["id"],))
+    item_exists = cur.fetchone()
+
+    if not item_exists:
+        item = Item(item_data["id"], item_data["name"], item_data["quantity"], item_data["price"], item_data["desc"])
+        cur.execute("INSERT INTO Inventory (itemID, itemName, quantity, price, desc) VALUES (?, ?, ?, ?, ?)",
+                    (item.itemID, item.itemName, item.quantity, item.price, item.desc))
+        con.commit()
+        print(f"Sample item '{item.itemName}' created.")
 
 exiting = False
 
@@ -153,7 +172,7 @@ inventory = []
 data = cur.execute('''SELECT * From inventory''')
 # data = data.fetchall
 for i in data:
-    inventory.append(Item(i[0], i[1], 1[2], i[3], i[4]))
+    inventory.append(Item(i[0], i[1], i[2], i[3], i[4]))
 
 # Main program loop until user exits from startmenu
 while(1):

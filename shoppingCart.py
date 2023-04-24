@@ -1,9 +1,10 @@
 import sqlite3
+from userClass import con
 
 
 class ShoppingCart:
     def __init__(self, user_id):
-        self.conn = sqlite3.connect('store.db')  # connect to db, what is db?
+        self.conn = con  # connect to db, what is db?
         self.c = self.conn.cursor()
         self.user_id = user_id
 
