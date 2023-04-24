@@ -1,6 +1,7 @@
 # connect to sqlite and db file
 import sqlite3
-con = sqlite3.connect("./project.sqlite")
+from userClass import con
+
 cur = con.cursor()
 
 # Item Class 
@@ -52,3 +53,4 @@ class Item:
         self.desc = str
         cur.execute ("UPDATE Inventory SET desc=? WHERE userID=?",(self.desc, self.itemID,))
         con.commit()
+    

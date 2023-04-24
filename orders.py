@@ -1,9 +1,10 @@
 import sqlite3
 from typing import List, Dict
 from datetime import datetime
+from userClass import con
 
 class Order:
-    def __init__(self, user_id: int, conn: sqlite3.Connection):
+    def __init__(self, user_id: int, conn: con):
         self.user_id = user_id
         self.conn = conn
         self.order_id = None

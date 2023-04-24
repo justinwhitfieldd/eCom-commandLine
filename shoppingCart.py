@@ -1,10 +1,12 @@
-from sqlite import con, cur
-from userClass import User
+import sqlite3
+from userClass import con
 
 
-class ShoppingCart(User):
+class ShoppingCart():
     def __init__(self, user_id):
-        self.user_id = User.id
+        self.conn = con  # connect to db, what is db?
+        self.c = self.conn.cursor()
+        self.user_id = user_id
 
     def addItem(self, item_id, quantity):
         # check if the item already exists in the cart
