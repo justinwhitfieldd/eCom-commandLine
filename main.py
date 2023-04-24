@@ -1,6 +1,6 @@
 from userClass import User, con, cur
 from itemClass import Item
-from orders import *
+from orders import Order
 from shoppingCart import ShoppingCart
 
 # Creating database tables if they do not exist
@@ -77,6 +77,8 @@ def startMenu():
         if sel == 1:
             user.logIn()
             if (user.loggedIn):
+                # cart = ShoppingCart(user.id)
+                # order = Order(user.id)
                 break
         elif sel == 2:
             user.createAccount()
@@ -172,7 +174,6 @@ def itemMenu():
 # def addToCart():
 
 user = User()
-#cart = ShoppingCart()
 inventory = []
 
 data = cur.execute('''SELECT * From inventory''')

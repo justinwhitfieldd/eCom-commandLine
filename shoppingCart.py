@@ -1,13 +1,8 @@
 import sqlite3
-from userClass import User, con, cur
+from userClass import con, cur
 
 '''
-Canon: I recommend using the below to utilize the userID generated in user class upon login,
-and instead of self.conn and self.c you could just use con and cur that were imported if you want
-
-class ShoppingCart(User):
-    def __init__(self):
-        self.user_id = User.id
+Canon: instead of self.conn and self.c you could just use con and cur that were imported if you want
 '''
 
 
