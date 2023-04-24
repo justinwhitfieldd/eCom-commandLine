@@ -1,6 +1,7 @@
 from sqlite import con, cur
 from userClass import User
 from orders import *
+from shoppingCart import ShoppingCart
 
 # Creating database tables if they do not exist
 cur.execute('''
@@ -121,6 +122,7 @@ def mainMenu():
             print("Invalid option")
 
 user = User()
+cart = ShoppingCart()
 
 # Main program loop until user exits from startmenu
 while(1):

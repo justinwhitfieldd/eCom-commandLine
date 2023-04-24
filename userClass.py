@@ -37,6 +37,7 @@ class User:
         email = input("Email: ")
         pwd = input("Password: ")
 
+        # Sets the userID for the rest of the program to base queries off of
         cur.execute("SELECT userID FROM customers WHERE email=? AND password=?", (email, pwd,))
         self.id = cur.fetchone()
 
