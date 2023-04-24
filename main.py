@@ -1,5 +1,6 @@
 from sqlite import con, cur
 from userClass import User
+from itemClass import Item
 from orders import *
 from shoppingCart import ShoppingCart
 
@@ -30,6 +31,14 @@ cur.execute('''
         FOREIGN KEY(userID) REFERENCES customers(userID))
         ''')
 
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS inventory(
+	    itemID integer PRIMARY KEY,
+	    itemName text NOT NULL,
+	    quantity integer NOT NULL,
+	    price real NOT NULL,
+	    desc text NOT NULL)
+        ''')
 
 
 exiting = False
@@ -109,20 +118,50 @@ def mainMenu():
         except ValueError:
             break
         # Selections
-        # if sel == 1:
-        #     blahblah
+        if sel == 1:
+            itemMenu()
         # elif sel == 2:
         #     blahblah
         # change below to elif after setting selection 1
-        if sel == 3:
+        elif sel == 3:
             userSettings()
         elif sel == 4:
             user.logOut()
         else:
             print("Invalid option")
 
+def itemMenu():
+    for i in inventory:
+        print(i)
+
+    while(1):
+        # Menu
+        print("\n---------------------")
+        print("Item Menu:")
+        print("1) Add Item to Cart")
+        print("2) Go Back")
+        # User Input
+        try:
+            sel = int(input("Enter your option: "))
+        except ValueError:
+            continue
+        # if sel == 1:
+            # addToCart()
+        if sel == 2:
+            break
+        else:
+            print("Invalid option")
+
+# def addToCart():
+
 user = User()
 cart = ShoppingCart()
+inventory = []
+
+data = cur.execute('''SELECT * From inventory''')
+# data = data.fetchall
+for i in data:
+    inventory.append(Item(i[0], i[1], 1[2], i[3], i[4]))
 
 # Main program loop until user exits from startmenu
 while(1):
