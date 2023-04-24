@@ -1,7 +1,11 @@
 import sqlite3
 from typing import List, Dict
 from datetime import datetime
-from userClass import con
+from userClass import con, cur
+
+'''
+Canon: instead of self.conn and the created cur you could just use con and cur that were imported if you want
+'''
 
 class Order:
     def __init__(self, user_id: int, conn: con):

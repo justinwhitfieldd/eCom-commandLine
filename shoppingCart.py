@@ -1,5 +1,9 @@
 import sqlite3
-from userClass import con
+from userClass import con, cur
+
+'''
+Canon: instead of self.conn and self.c you could just use con and cur that were imported if you want
+'''
 
 
 class ShoppingCart:

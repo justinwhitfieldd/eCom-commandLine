@@ -1,12 +1,9 @@
-# connection to sqlite is currently in userClass.py
-# I wanted to do it in main but importing from main into other
-# files causes an import loop where the files depend on each other
-
 from userClass import User, con, cur
 from itemClass import Item
-from orders import *
-from shoppingCart import *
-# Creating customer, shipping, and inventory table if they do not exist
+from orders import Order
+from shoppingCart import ShoppingCart
+
+# Creating database tables if they do not exist
 cur.execute('''
     CREATE TABLE IF NOT EXISTS customers(
         userID integer PRIMARY KEY, 
@@ -25,6 +22,14 @@ cur.execute('''
         FOREIGN KEY(userID) REFERENCES customers(userID))
         ''')
 cur.execute('''
+    CREATE TABLE IF NOT EXISTS payment(
+        userID integer, 
+        type text NOT NULL,
+        number integer NOT NULL,
+        cvv integer NOT NULL,
+        FOREIGN KEY(userID) REFERENCES customers(userID))
+        ''')
+cur.execute('''
     CREATE TABLE IF NOT EXISTS inventory(
 	    itemID integer PRIMARY KEY,
 	    itemName text NOT NULL,
@@ -32,6 +37,7 @@ cur.execute('''
 	    price real NOT NULL,
 	    desc text NOT NULL)
         ''')
+
 # create items if they do not already exist
 # Sample nuts
 sample_items = [
@@ -71,6 +77,8 @@ def startMenu():
         if sel == 1:
             user.logIn()
             if (user.loggedIn):
+                # cart = ShoppingCart(user.id)
+                # order = Order(user.id)
                 break
         elif sel == 2:
             user.createAccount()
@@ -82,7 +90,7 @@ def startMenu():
             print("Invalid option")
 
 def userSettings():
-    while (1):
+    while (user.loggedIn):
         # Menu
         print("\nSettings: ")
         print("1) Change name")
@@ -102,12 +110,12 @@ def userSettings():
             user.changeName()
         elif sel == 2:
             user.resetPassword()
-        # elif sel == 3:
-        #     blahblah
-        # elif sel == 4:
-        #     blahblah
-        # elif sel == 5:
-        #     blahblah
+        elif sel == 3:
+            user.editShippingInfo()
+        elif sel == 4:
+            user.editPaymentInfo()
+        elif sel == 5:
+            user.deleteAccount()
         # elif sel == 6:
         #     blahblah
         elif sel == 7:
@@ -116,7 +124,7 @@ def userSettings():
             print("Invalid option")
 
 def mainMenu():
-    while (1):
+    while (user.loggedIn):
         # Menu
         print("\nMain Menu:")
         print("1) View Item Catalog")
@@ -138,7 +146,6 @@ def mainMenu():
             userSettings()
         elif sel == 4:
             user.logOut()
-            break
         else:
             print("Invalid option")
 
@@ -181,8 +188,8 @@ while(1):
     else:
         startMenu()
 
-    if (user.loggedIn):
-        mainMenu()
+    # Main menu only loops while loggedIn = true
+    mainMenu()
 
 
 cur.close()
