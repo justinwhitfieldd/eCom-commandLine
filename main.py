@@ -1,5 +1,4 @@
-from sqlite import con, cur
-from userClass import User
+from userClass import User, con, cur
 from itemClass import Item
 from orders import *
 from shoppingCart import ShoppingCart
@@ -30,7 +29,6 @@ cur.execute('''
         cvv integer NOT NULL,
         FOREIGN KEY(userID) REFERENCES customers(userID))
         ''')
-
 cur.execute('''
     CREATE TABLE IF NOT EXISTS inventory(
 	    itemID integer PRIMARY KEY,
@@ -39,6 +37,7 @@ cur.execute('''
 	    price real NOT NULL,
 	    desc text NOT NULL)
         ''')
+
 # create items if they do not already exist
 # Sample nuts
 sample_items = [
@@ -173,7 +172,7 @@ def itemMenu():
 # def addToCart():
 
 user = User()
-cart = ShoppingCart()
+#cart = ShoppingCart()
 inventory = []
 
 data = cur.execute('''SELECT * From inventory''')

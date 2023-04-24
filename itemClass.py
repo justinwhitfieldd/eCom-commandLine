@@ -1,8 +1,6 @@
 # connect to sqlite and db file
 import sqlite3
-from userClass import con
-
-cur = con.cursor()
+from userClass import con, cur
 
 # Item Class 
 class Item:

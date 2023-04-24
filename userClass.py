@@ -1,10 +1,13 @@
-# connect to sqlite and db file
-from sqlite import con, cur
+# Create a singular connection to sqlite and db file to share with every other file
+import sqlite3
+con = sqlite3.connect("./project.sqlite")
+cur = con.cursor()
 
 # User Class 
 class User:
 
     loggedIn = False
+    id = None
 
     def createAccount(self):
         print("\nPlease enter an email, password, first name, and last name")

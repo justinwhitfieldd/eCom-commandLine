@@ -1,7 +1,16 @@
 import sqlite3
 from typing import List, Dict
 from datetime import datetime
-from userClass import con
+from userClass import User, con, cur
+
+'''
+Canon: I recommend using the below to utilize the userID generated in user class upon login,
+and instead of self.conn and the created cur you could just use con and cur that were imported if you want
+
+class Order(User):
+    def __init__(self):
+        self.user_id = User.id
+'''
 
 class Order:
     def __init__(self, user_id: int, conn: con):
