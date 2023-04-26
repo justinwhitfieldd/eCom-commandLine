@@ -49,7 +49,7 @@ cur.execute('''
 	    itemID integer,
         cartID integer,
 	    itemQuantity integer,
-	    itemPrice real,
+	    price integer,
         userID integer,
         FOREIGN KEY(userID) REFERENCES customers(userID),
         FOREIGN KEY(cartID) REFERENCES cart(cartID),
@@ -59,10 +59,14 @@ cur.execute('''
 # create items if they do not already exist
 # Sample nuts
 sample_items = [
-    {"id": 1, "name": "Almonds", "quantity": 100, "price": 5.99, "desc": "Delicious and healthy almonds."},
-    {"id": 2, "name": "Cashews", "quantity": 80, "price": 6.99, "desc": "Crunchy and tasty cashews."},
-    {"id": 3, "name": "Pistachios", "quantity": 120, "price": 7.99, "desc": "Nutritious and flavorful pistachios."},
-    {"id": 4, "name": "Walnuts", "quantity": 60, "price": 8.99, "desc": "Fresh and high-quality walnuts."},
+    {"id": 1, "name": "Almonds", "quantity": 100, "price": 5.99,
+        "desc": "Delicious and healthy almonds."},
+    {"id": 2, "name": "Cashews", "quantity": 80,
+        "price": 6.99, "desc": "Crunchy and tasty cashews."},
+    {"id": 3, "name": "Pistachios", "quantity": 120, "price": 7.99,
+        "desc": "Nutritious and flavorful pistachios."},
+    {"id": 4, "name": "Walnuts", "quantity": 60, "price": 8.99,
+        "desc": "Fresh and high-quality walnuts."},
 ]
 
 for item_data in sample_items:
@@ -70,7 +74,8 @@ for item_data in sample_items:
     item_exists = cur.fetchone()
 
     if not item_exists:
-        item = Item(item_data["id"], item_data["name"], item_data["quantity"], item_data["price"], item_data["desc"])
+        item = Item(item_data["id"], item_data["name"],
+                    item_data["quantity"], item_data["price"], item_data["desc"])
         cur.execute("INSERT INTO Inventory (itemID, itemName, quantity, price, desc) VALUES (?, ?, ?, ?, ?)",
                     (item.itemID, item.itemName, item.quantity, item.price, item.desc))
         con.commit()
@@ -79,6 +84,8 @@ for item_data in sample_items:
 exiting = False
 
 # Menus
+
+
 def startMenu():
     while (1):
         # Menu
@@ -106,6 +113,7 @@ def startMenu():
             break
         else:
             print("Invalid option")
+
 
 def userSettings():
     while (user.loggedIn):
@@ -137,9 +145,10 @@ def userSettings():
         # elif sel == 6:
         #     blahblah
         elif sel == 7:
-            break      
+            break
         else:
             print("Invalid option")
+
 
 def mainMenu():
     while (user.loggedIn):
@@ -167,11 +176,12 @@ def mainMenu():
         else:
             print("Invalid option")
 
+
 def itemMenu():
     for i in inventory:
         print(i)
 
-    while(1):
+    while (1):
         # Menu
         cart = ShoppingCart(user.id)
         print("\n---------------------")
@@ -185,12 +195,14 @@ def itemMenu():
             continue
         if sel == 1:
             cart.addItem()
+            continue
         if sel == 2:
             break
         else:
             print("Invalid option")
 
 # def addToCart():
+
 
 user = User()
 inventory = []
@@ -201,7 +213,7 @@ for i in data:
     inventory.append(Item(i[0], i[1], i[2], i[3], i[4]))
 
 # Main program loop until user exits from startmenu
-while(1):
+while (1):
     if (exiting):
         break
     else:
