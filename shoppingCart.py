@@ -1,30 +1,41 @@
 import sqlite3
 from userClass import con, cur
 
-'''
-Canon: instead of self.conn and self.c you could just use con and cur that were imported if you want
-'''
-
 
 class ShoppingCart:
-    def __init__(self, user_id):
+    def __init__(self, userID):
+        print("userID in __init__:", userID)
         self.conn = con  # connect to db, what is db?
         self.c = self.conn.cursor()
-        self.user_id = user_id
+        self.userID = userID
 
-    def addItem(self, item_id, quantity):
+    def addItem(self):
+        itemID = 1
+        itemQuantity = 1
+        itemPrice = 2
+        # check if a cart exists for the user
+        self.c.execute('SELECT cartID FROM cart WHERE userID=?', (self.userID,))
+        cart_result = self.c.fetchone()
+        if cart_result is None:
+            # create a new cart for the user
+            self.c.execute('INSERT INTO cart (userID, total) VALUES (?, 0)', (self.userID,))
+            self.conn.commit()
+            self.cartID = self.c.lastrowid
+        else:
+            self.cartID = cart_result[0]
+
         # check if the item already exists in the cart
         self.c.execute(
-            'SELECT quantity FROM cart WHERE item_id=? AND user_id=?', (item_id, self.user_id))
+            'SELECT itemQuantity FROM items WHERE itemID=? AND cartID=?', (itemID, self.cartID))
         result = self.c.fetchone()
         if result is not None:
-            # update the quantity of the existing item
-            self.c.execute('UPDATE cart SET quantity=quantity+? WHERE item_id=? AND user_id=?',
-                           (quantity, item_id, self.user_id))
+            # update the itemQuantity of the existing item
+            self.c.execute('UPDATE items SET itemQuantity=itemQuantity+? WHERE itemID=? AND cartID=?',
+                            (itemQuantity, itemID, self.cartID))
         else:
             # insert the new item into the cart
-            self.c.execute('INSERT INTO cart VALUES (?, ?, ?)',
-                           (item_id, quantity, self.user_id))
+            self.c.execute('INSERT INTO items VALUES (?, ?, ?, ?, ?)',
+                            (itemID, self.cartID, itemQuantity, itemPrice, self.userID))
         self.conn.commit()
 
     def removeItem(self, item_id, quantity):

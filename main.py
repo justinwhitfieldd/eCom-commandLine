@@ -37,6 +37,24 @@ cur.execute('''
 	    price real NOT NULL,
 	    desc text NOT NULL)
         ''')
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS cart(
+	    cartID integer PRIMARY KEY,
+	    userID integer NOT NULL,
+	    total integer,
+        FOREIGN KEY(userID) REFERENCES customers(userID))
+        ''')
+cur.execute('''
+    CREATE TABLE IF NOT EXISTS items(
+	    itemID integer,
+        cartID integer,
+	    itemQuantity integer,
+	    itemPrice real,
+        userID integer,
+        FOREIGN KEY(userID) REFERENCES customers(userID),
+        FOREIGN KEY(cartID) REFERENCES cart(cartID),
+        FOREIGN KEY(itemID) REFERENCES inventory(itemID))
+        ''')
 
 # create items if they do not already exist
 # Sample nuts
@@ -155,6 +173,7 @@ def itemMenu():
 
     while(1):
         # Menu
+        cart = ShoppingCart(user.id)
         print("\n---------------------")
         print("Item Menu:")
         print("1) Add Item to Cart")
@@ -164,8 +183,8 @@ def itemMenu():
             sel = int(input("Enter your option: "))
         except ValueError:
             continue
-        # if sel == 1:
-            # addToCart()
+        if sel == 1:
+            cart.addItem()
         if sel == 2:
             break
         else:
