@@ -1,6 +1,6 @@
 from userClass import User, con, cur
 from itemClass import Item
-from orders import Order
+from orders import *
 from shoppingCart import ShoppingCart
 
 # Creating database tables if they do not exist
@@ -55,6 +55,28 @@ cur.execute('''
         FOREIGN KEY(cartID) REFERENCES cart(cartID),
         FOREIGN KEY(itemID) REFERENCES inventory(itemID))
         ''')
+cur.execute("""
+            CREATE TABLE IF NOT EXISTS orders (
+                orderID INTEGER PRIMARY KEY AUTOINCREMENT,
+                userID INTEGER NOT NULL,
+                total_price REAL NOT NULL,
+                timestamp TEXT NOT NULL,
+                FOREIGN KEY (userID) REFERENCES customers (userID)
+            )
+        """)
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS order_items (
+        orderItemID INTEGER PRIMARY KEY AUTOINCREMENT,
+        itemName text NOT NULL,
+        orderID INTEGER NOT NULL,
+        itemID INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        price REAL NOT NULL,
+        FOREIGN KEY (orderID) REFERENCES orders (orderID),
+        FOREIGN KEY (itemID) REFERENCES items (itemID)
+    )
+""")
+       
 
 # create items if they do not already exist
 # Sample nuts
@@ -79,12 +101,59 @@ for item_data in sample_items:
         cur.execute("INSERT INTO Inventory (itemID, itemName, quantity, price, desc) VALUES (?, ?, ?, ?, ?)",
                     (item.itemID, item.itemName, item.quantity, item.price, item.desc))
         con.commit()
-        print(f"Sample item '{item.itemName}' created.")
 
 exiting = False
 
 # Menus
 
+print("")
+print("\033[0;37m", end="")
+for c in "███████╗██╗ ██████╗██╗  ██╗    ███╗   ██╗██╗   ██╗████████╗███████╗":
+    if c == "█":
+        print("\033[41m\033[31m" + c, end="")
+    else:
+        print("\033[0m\033[37m" + c, end="")
+print("\033[0m")
+
+print("\033[0;37m", end="")
+for c in "██╔════╝██║██╔════╝██║ ██╔╝    ████╗  ██║██║   ██║╚══██╔══╝██╔════╝":
+    if c == "█":
+        print("\033[41m\033[31m" + c, end="")
+    else:
+        print("\033[0m\033[37m" + c, end="")
+print("\033[0m")
+
+print("\033[0;37m", end="")
+for c in "███████╗██║██║     █████╔╝     ██╔██╗ ██║██║   ██║   ██║   ███████╗":
+    if c == "█":
+        print("\033[41m\033[31m" + c, end="")
+    else:
+        print("\033[0m\033[37m" + c, end="")
+print("\033[0m")
+
+print("\033[0;37m", end="")
+for c in "╚════██║██║██║     ██╔═██╗     ██║╚██╗██║██║   ██║   ██║   ╚════██║":
+    if c == "█":
+        print("\033[41m\033[31m" + c, end="")
+    else:
+        print("\033[0m\033[37m" + c, end="")
+print("\033[0m")
+
+print("\033[0;37m", end="")
+for c in "███████║██║╚██████╗██║  ██╗    ██║ ╚████║╚██████╔╝   ██║   ███████║":
+    if c == "█":
+        print("\033[41m\033[31m" + c, end="")
+    else:
+        print("\033[0m\033[37m" + c, end="")
+print("\033[0m")
+
+print("\033[0;37m", end="")
+for c in "╚══════╝╚═╝ ╚═════╝╚═╝  ╚═╝    ╚═╝  ╚═══╝ ╚═════╝    ╚═╝   ╚══════╝":
+    if c == "█":
+        print("\033[41m\033[31m" + c, end="")
+    else:
+        print("\033[0m\033[37m" + c, end="")
+print("\033[0m")
 
 def startMenu():
     while (1):
@@ -116,6 +185,9 @@ def startMenu():
 
 
 def userSettings():
+    #create instance or order
+    ord = Order(user.id)
+
     while (user.loggedIn):
         # Menu
         print("\nSettings: ")
@@ -142,8 +214,8 @@ def userSettings():
             user.editPaymentInfo()
         elif sel == 5:
             user.deleteAccount()
-        # elif sel == 6:
-        #     blahblah
+        elif sel == 6:
+            ord.view_order()
         elif sel == 7:
             break
         else:
