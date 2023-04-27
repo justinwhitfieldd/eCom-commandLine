@@ -12,8 +12,16 @@ class User:
     def createAccount(self):
         print("\nPlease enter an email, password, first name, and last name")
 
-        email = input("Email: ")
-        pwd = input("Password: ")
+        # Loop until user creates account with email not in use
+        while (True):
+            email = input("Email: ")
+            cur.execute("SELECT userID FROM customers WHERE email = ?", (email,))
+            if cur.fetchone() == None:
+                break
+            else:
+                print("Email already in use.")
+
+        pwd = input("Passsord: ")
         fname = input("First Name: ")
         lname = input("Last Name: ")
 
@@ -28,6 +36,7 @@ class User:
         if pwd == cur.fetchone()[0]:
             cur.execute("DELETE FROM customers WHERE userID = ?",(self.id,))
             cur.execute("DELETE FROM shipping WHERE userID = ?",(self.id,))
+            cur.execute("DELETE FROM orders WHERE userID = ?",(self.id,))
             con.commit()
             self.id = None
             self.loggedIn = False
