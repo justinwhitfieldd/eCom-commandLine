@@ -8,14 +8,13 @@ Canon: instead of self.conn and the created cur you could just use con and cur t
 '''
 
 class Order:
-    def __init__(self, user_id: int, conn: con):
+    def __init__(self, user_id: int):
         self.user_id = user_id
-        self.conn = conn
+        self.conn = con
         self.order_id = None
         self.items = []
         self.total_price = 0.0
         self.timestamp = ""
-        self.create_tables()
 
     def add_order(self, items: List[Dict], total_price: float) -> None:
         self.items = items
@@ -29,57 +28,40 @@ class Order:
         self.conn.commit()
 
         for item in items:
-            cur.execute("INSERT INTO order_items (orderID, itemID, quantity, price) VALUES (?, ?, ?, ?)",
-                        (self.order_id, item['item_id'], item['quantity'], item['price']))
-            cur.execute("UPDATE items SET stock = stock - ? WHERE itemID = ?",
-                        (item['quantity'], item['item_id']))
+            cur.execute("INSERT INTO order_items (orderID, itemName, itemID, quantity, price) VALUES (?, ?, ?, ?, ?)",
+                        (self.order_id, item['itemName'], item['item_id'] ,item['quantity'], item['price']))
+            
 
         self.conn.commit()
 
     def view_order(self) -> List[Dict]:
+        print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
+        print("|         ORDER HISTORY         |")
         cur = self.conn.cursor()
-        cur.execute("SELECT * FROM orders WHERE orderID = ?", (self.order_id,))
-        order = cur.fetchone()
-        if order:
-            cur.execute("SELECT * FROM order_items WHERE orderID = ?", (self.order_id,))
-            order_items = cur.fetchall()
+        cur.execute("SELECT * FROM orders WHERE userID = ?", (self.user_id,))
+        orders = cur.fetchall()
 
-            items = []
-            for item in order_items:
-                item_id, quantity, price = item[2], item[3], item[4]
-                cur.execute("SELECT name FROM items WHERE itemID = ?", (item_id,))
-                item_name = cur.fetchone()[0]
-                items.append({"item_id": item_id, "name": item_name, "quantity": quantity, "price": price})
+        if(orders):
+            print("|      Number of Orders: ",len(orders),"    |")
+            print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
+            for order in orders:
 
-            return {"order_id": order[0], "total_price": order[2], "timestamp": order[3], "items": items}
+                cur.execute("SELECT * FROM order_items WHERE orderID = ?", (order[0],))
+                order_items = cur.fetchall()
 
+                # Print the order details
+                print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
+                print(f"Order ID: {order[0]}")
+                print(f"Total Price: ${order[2]}")
+                print(f"Timestamp: {order[3]}")
+                print("\nItems: ")
+
+                for item in order_items:
+                    print(f"Name: {item[1]}")
+                    print(f"Quantity: {item[4]}")
+                    print(f"Price: {item[5]}")
+                print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
+
+        else:
+            print("No order found.")
         return None
-
-    def create_tables(self) -> None:
-        cur = self.conn.cursor()
-
-        # Create orders table if it doesn't exist
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS orders (
-                orderID INTEGER PRIMARY KEY AUTOINCREMENT,
-                userID INTEGER NOT NULL,
-                total_price REAL NOT NULL,
-                timestamp TEXT NOT NULL,
-                FOREIGN KEY (userID) REFERENCES customers (userID)
-            )
-        """)
-
-        # Create order_items table if it doesn't exist
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS order_items (
-                orderItemID INTEGER PRIMARY KEY AUTOINCREMENT,
-                orderID INTEGER NOT NULL,
-                itemID INTEGER NOT NULL,
-                quantity INTEGER NOT NULL,
-                price REAL NOT NULL,
-                FOREIGN KEY (orderID) REFERENCES orders (orderID),
-                FOREIGN KEY (itemID) REFERENCES items (itemID)
-            )
-        """)
-
-        self.conn.commit()

@@ -1,6 +1,6 @@
 import sqlite3
 from userClass import con, cur
-
+from orders import Order
 
 class ShoppingCart:
     def __init__(self, userID):
@@ -115,6 +115,20 @@ class ShoppingCart:
         payment_cvv = input("CVV: ")
         cur.execute("INSERT INTO payment(userID, type, number, cvv) VALUES (?, ?, ?, ?)",
                     (self.userID, payment_type, payment_number, payment_cvv))
+        
+        # Create Order instance and populate it with cart items
+        cur.execute("SELECT itemID, itemQuantity FROM items WHERE userID=?", (self.userID,))
+        items = cur.fetchall()
+        order_items = []
+        for item in items:
+            item_id, item_quantity = item
+            cur.execute("SELECT itemName, price FROM inventory WHERE itemID=?", (item_id,))
+            item_name, item_price = cur.fetchone()
+            order_items.append({'item_id': item_id, 'itemName': item_name, 'quantity': item_quantity, 'price': item_price})
+
+        order = Order(self.userID)
+        order_total_price = sum([item['price'] * item['quantity'] for item in order_items])
+        order.add_order(order_items, order_total_price)
 
         # Update inventory and cart tables
         cur.execute(
