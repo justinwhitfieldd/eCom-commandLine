@@ -153,6 +153,7 @@ def userSettings():
 def mainMenu():
     while (user.loggedIn):
         # Menu
+        cart = ShoppingCart(user.id)
         print("\nMain Menu:")
         print("1) View Item Catalog")
         print("2) View Cart")
@@ -166,9 +167,26 @@ def mainMenu():
         # Selections
         if sel == 1:
             itemMenu()
-        # elif sel == 2:
-        #     blahblah
-        # change below to elif after setting selection 1
+        elif sel == 2:
+            cart.displayCart()
+            print("\nCart Actions: ")
+            print("1) Remove items")
+            print("2) Checkout")
+            print("3) Exit cart")
+            try:
+                cartSel = int(input("Enter your option: "))
+            except ValueError:
+                break
+            if cartSel == 1:
+                cart.removeItem()
+                continue
+            elif cartSel == 2:
+                cart.checkout()
+                continue
+            elif cartSel == 3:
+                continue
+            else:
+                print("Invalid response, please try again. ")
         elif sel == 3:
             userSettings()
         elif sel == 4:

@@ -4,8 +4,6 @@ from userClass import con, cur
 
 class ShoppingCart:
     def __init__(self, userID):
-        self.conn = sqlite3.connect('store.db')  # connect to db, what is db?
-        self.c = self.conn.cursor()
         self.userID = userID
 
     def addItem(self):
@@ -21,8 +19,6 @@ class ShoppingCart:
         if not item:
             print("Item not found in inventory")
             return
-
-        itemName, inventoryQuantity, itemPrice = item
 
         # Get or create the user's cart
         cur.execute(
@@ -42,6 +38,7 @@ class ShoppingCart:
         itemTotalPrice = itemPrice * itemQuantity
         cur.execute("INSERT INTO items (itemID, cartID, itemQuantity, price, userID) VALUES (?, ?, ?, ?, ?)",
                     (itemID, cartID, itemQuantity, itemTotalPrice, self.userID))
+        con.commit()
 
         # Update cart total
         cur.execute("UPDATE cart SET total=? WHERE cartID=?",
@@ -49,54 +46,109 @@ class ShoppingCart:
 
         con.commit()
 
-    def removeItem(self, item_id, quantity):
-        # check if the item exists in the cart
-        cur.execute(
-            'SELECT quantity FROM cart WHERE item_id=? AND user_id=?', (item_id, self.user_id))
-        result = self.c.fetchone()
-        if result is not None:
-            current_quantity = result[0]
-            # update the quantity of the existing item
-            if current_quantity > quantity:
-                cur.execute(
-                    'UPDATE cart SET quantity=quantity-? WHERE item_id=? AND user_id=?', (quantity, item_id, self.user_id))
-            else:
-                cur.execute(
-                    'DELETE FROM cart WHERE item_id=? AND user_id=?', (item_id, self.user_id))
-            con.commit()
-
-    def clearCart(self):
-        cur.execute('DELETE FROM cart WHERE user_id=?', (self.user_id,))
-        cur.execute('DELETE FROM items WHERE user_id=?', (self.user_id,))
+    def removeItem(self):
+        itemID = int(input("Please input the itemID "))
+        quantity = int(
+            input("Enter the quantity of the item you want to remove: "))
+        cur.execute('''
+            UPDATE items
+            SET itemQuantity = itemQuantity - ?
+            WHERE itemID = ? AND cartID = (
+                SELECT cartID FROM cart WHERE userID = ?
+            )''', (quantity, itemID, self.userID))
         con.commit()
 
-    def getItemCount(self):
-        cur.execute(
-            'SELECT SUM(quantity) FROM cart WHERE user_id=?', (self.user_id,))
-        result = self.c.fetchone()
-        return result[0] if result[0] is not None else 0
+        cur.execute('''
+            UPDATE items
+            SET price = itemQuantity * (
+                SELECT price FROM inventory WHERE itemID = ?
+            )
+            WHERE itemID = ? AND cartID = (
+                SELECT cartID FROM cart WHERE userID = ?
+            )''', (itemID, itemID, self.userID))
+        con.commit()
+
+        cur.execute('''
+        UPDATE cart
+        SET total = (
+            SELECT SUM(price) FROM items
+            WHERE cartID = (
+                SELECT cartID FROM cart WHERE userID = ?
+                )
+            )
+            WHERE userID = ?
+        ''', (self.userID, self.userID))
+        con.commit()
+
+        print(
+            f'{quantity} units of item with ID {itemID} have been removed from the cart.')
+        cur.execute('''
+            DELETE FROM items
+            WHERE itemQuantity <= 0 AND cartID = (
+                SELECT cartID FROM cart WHERE userID = ?
+            )''', (self.userID,))
+        con.commit()
 
     def checkout(self):
-        # add order to order history
-        cur.execute('INSERT INTO orders (user_id, total_price) VALUES (?, ?)',
-                    (self.user_id, self.getTotalPrice()))
-        order_id = self.c.lastrowid
+        # Check if cart is empty
+        cur.execute("SELECT COUNT(*) FROM items WHERE userID=?",
+                    (self.userID,))
+        cart_size = cur.fetchone()[0]
+        if cart_size == 0:
+            print("Your cart is empty.")
+            return
 
-        # remove items from cart and add them to order items
+        # Get shipping information from user
+        print("Please enter your shipping information:")
+        address = input("Address: ")
+        city = input("City: ")
+        state = input("State: ")
+        zip_code = input("Zip Code: ")
+        cur.execute("INSERT INTO shipping(userID, address, city, state, zip) VALUES (?, ?, ?, ?, ?)",
+                    (self.userID, address, city, state, zip_code))
+
+        # Get payment information from user
+        print("\nPlease enter your payment information:")
+        payment_type = input(
+            "Payment Type (e.g. Credit Card, Debit Card, PayPal): ")
+        payment_number = input("Card Number: ")
+        payment_cvv = input("CVV: ")
+        cur.execute("INSERT INTO payment(userID, type, number, cvv) VALUES (?, ?, ?, ?)",
+                    (self.userID, payment_type, payment_number, payment_cvv))
+
+        # Update inventory and cart tables
         cur.execute(
-            'SELECT item_id, quantity FROM cart WHERE user_id=?', (self.user_id,))
-        items = self.c.fetchall()
+            "SELECT itemID, itemQuantity FROM items WHERE userID=?", (self.userID,))
+        items = cur.fetchall()
         for item in items:
-            cur.execute('INSERT INTO order_items VALUES (?, ?, ?)',
-                        (order_id, item[0], item[1]))
+            item_id, item_quantity = item
             cur.execute(
-                'UPDATE items SET stock=stock-? WHERE id=?', (item[1], item[0]))
+                "UPDATE inventory SET quantity=quantity-? WHERE itemID=?", (item_quantity, item_id))
+            cur.execute("DELETE FROM items WHERE itemID=? AND userID=?",
+                        (item_id, self.userID))
+        cur.execute("UPDATE cart SET total=0 WHERE userID=?", (self.userID,))
+
+        # Commit changes and print success message
         con.commit()
+        print("Thank you for your purchase!")
 
     def displayCart(self):
-        cur.execute(
-            'SELECT items.id, items.name, items.price, cart.quantity FROM cart INNER JOIN items ON cart.item_id=items.id WHERE cart.user_id=?', (self.user_id,))
-        items = self.c.fetchall()
-        print('Shopping Cart:')
+        cur.execute('''
+            SELECT items.itemID, inventory.itemName, inventory.price, items.itemQuantity, 
+                   items.itemQuantity * inventory.price as itemTotal
+            FROM items
+            INNER JOIN inventory ON items.itemID = inventory.itemID
+            WHERE items.cartID = (
+                SELECT cartID FROM cart WHERE userID = ?
+            )''', (self.userID,))
+        items = cur.fetchall()
+        print('\nShopping Cart:\n')
+        total = 0
         for item in items:
-            print(f'{item[0]} - {item[1]} - ${item[2]} - Quantity: {item[3]}')
+            print(
+                f'({item[0]}) {item[1]} - ${item[2]}/each - Quantity: {item[3]} - Item Total: ${item[4]}')
+            total += item[4]
+        print(f'------------------------')
+        print(f'Total Price: ${total}')
+
+        con.commit()
