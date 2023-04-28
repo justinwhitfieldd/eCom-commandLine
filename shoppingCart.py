@@ -36,14 +36,26 @@ class ShoppingCart:
             cartID, cartTotal = cart
 
         # Add item to items table
-        itemTotalPrice = itemPrice * itemQuantity
-        cur.execute("INSERT INTO items (itemID, cartID, itemQuantity, price, userID) VALUES (?, ?, ?, ?, ?)",
-                    (itemID, cartID, itemQuantity, itemTotalPrice, self.userID))
-        con.commit()
+        # Check if the item already exists in the user's cart
+        cur.execute("SELECT itemQuantity, price FROM items WHERE itemID=? AND userID=?", (itemID, self.userID))
+        existing_item = cur.fetchone()
 
-        # Update cart total
-        cur.execute("UPDATE cart SET total=? WHERE cartID=?",
-                    (cartTotal + itemTotalPrice, cartID))
+        itemTotalPrice = itemPrice * itemQuantity
+
+        if existing_item:
+            # Update the existing item's quantity and price
+            new_quantity = existing_item[0] + itemQuantity
+            new_price = existing_item[1] + itemTotalPrice
+            cur.execute("UPDATE items SET itemQuantity=?, price=? WHERE itemID=? AND userID=?",
+                        (new_quantity, new_price, itemID, self.userID))
+        else:
+            # Add a new row for the item in the items table
+            cur.execute("INSERT INTO items (itemID, cartID, itemQuantity, price, userID) VALUES (?, ?, ?, ?, ?)",
+                        (itemID, cartID, itemQuantity, itemTotalPrice, self.userID))
+
+            # Update cart total
+            cur.execute("UPDATE cart SET total=? WHERE cartID=?",
+                        (cartTotal + itemTotalPrice, cartID))
 
         con.commit()
 
@@ -177,9 +189,9 @@ class ShoppingCart:
         total = 0
         for item in items:
             print(
-                f'Item ID:{item[0]}\nItem Name: {item[1]}\nUnit Price: ${item[2]}/each\nQuantity: {item[3]}\nItem Total: ${item[4]} \n')
+                f'Item ID:{item[0]}\nItem Name: {item[1]}\nUnit Price: ${item[2]}/each\nQuantity: {item[3]} \n')
             total += item[4]
         print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
-        print(f'Total Price: ${total}')
+        print(f'Total Price: $','%.2f' % total)
 
         con.commit()
