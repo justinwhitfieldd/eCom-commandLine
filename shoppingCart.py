@@ -2,6 +2,7 @@ import sqlite3
 from userClass import con, cur
 from orders import Order
 
+
 class ShoppingCart:
     def __init__(self, userID):
         self.userID = userID
@@ -98,36 +99,48 @@ class ShoppingCart:
             print("Your cart is empty.")
             return
 
-        # Get shipping information from user
-        print("Please enter your shipping information:")
-        address = input("Address: ")
-        city = input("City: ")
-        state = input("State: ")
-        zip_code = input("Zip Code: ")
-        cur.execute("INSERT INTO shipping(userID, address, city, state, zip) VALUES (?, ?, ?, ?, ?)",
-                    (self.userID, address, city, state, zip_code))
+        # Check if user already has shipping information
+        cur.execute("SELECT COUNT(*) FROM shipping WHERE userID=?",
+                    (self.userID,))
+        shipping_count = cur.fetchone()[0]
+        if shipping_count == 0:
+            print("Please enter your shipping information:")
+            address = input("Address: ")
+            city = input("City: ")
+            state = input("State: ")
+            zip_code = input("Zip Code: ")
+            cur.execute("INSERT INTO shipping(userID, address, city, state, zip) VALUES (?, ?, ?, ?, ?)",
+                        (self.userID, address, city, state, zip_code))
 
-        # Get payment information from user
-        print("\nPlease enter your payment information:")
-        payment_type = input(
-            "Payment Type (e.g. Credit Card, Debit Card, PayPal): ")
-        payment_number = input("Card Number: ")
-        payment_cvv = input("CVV: ")
-        cur.execute("INSERT INTO payment(userID, type, number, cvv) VALUES (?, ?, ?, ?)",
-                    (self.userID, payment_type, payment_number, payment_cvv))
-        
+        # Check if user already has payment information
+        cur.execute("SELECT COUNT(*) FROM payment WHERE userID=?",
+                    (self.userID,))
+        payment_count = cur.fetchone()[0]
+        if payment_count == 0:
+            print("\nPlease enter your payment information:")
+            payment_type = input(
+                "Payment Type (e.g. Credit Card, Debit Card, PayPal): ")
+            payment_number = input("Card Number: ")
+            payment_cvv = input("CVV: ")
+            cur.execute("INSERT INTO payment(userID, type, number, cvv) VALUES (?, ?, ?, ?)",
+                        (self.userID, payment_type, payment_number, payment_cvv))
+
         # Create Order instance and populate it with cart items
-        cur.execute("SELECT itemID, itemQuantity FROM items WHERE userID=?", (self.userID,))
+        cur.execute(
+            "SELECT itemID, itemQuantity FROM items WHERE userID=?", (self.userID,))
         items = cur.fetchall()
         order_items = []
         for item in items:
             item_id, item_quantity = item
-            cur.execute("SELECT itemName, price FROM inventory WHERE itemID=?", (item_id,))
+            cur.execute(
+                "SELECT itemName, price FROM inventory WHERE itemID=?", (item_id,))
             item_name, item_price = cur.fetchone()
-            order_items.append({'item_id': item_id, 'itemName': item_name, 'quantity': item_quantity, 'price': item_price})
+            order_items.append({'item_id': item_id, 'itemName': item_name,
+                               'quantity': item_quantity, 'price': item_price})
 
         order = Order(self.userID)
-        order_total_price = sum([item['price'] * item['quantity'] for item in order_items])
+        order_total_price = sum(
+            [item['price'] * item['quantity'] for item in order_items])
         order.add_order(order_items, order_total_price)
 
         # Update inventory and cart tables
@@ -156,13 +169,17 @@ class ShoppingCart:
                 SELECT cartID FROM cart WHERE userID = ?
             )''', (self.userID,))
         items = cur.fetchall()
-        print('\nShopping Cart:\n')
+        print("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
+        print("|         SHOPPING CART         |")
+        print("|       Holding your nuts       |")
+        print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*\n")
+
         total = 0
         for item in items:
             print(
-                f'({item[0]}) {item[1]} - ${item[2]}/each - Quantity: {item[3]} - Item Total: ${item[4]}')
+                f'Item ID:{item[0]}\nItem Name: {item[1]}\nUnit Price: ${item[2]}/each\nQuantity: {item[3]}\nItem Total: ${item[4]} \n')
             total += item[4]
-        print(f'------------------------')
+        print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")
         print(f'Total Price: ${total}')
 
         con.commit()

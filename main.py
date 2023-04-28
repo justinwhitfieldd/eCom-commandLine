@@ -76,7 +76,7 @@ cur.execute("""
         FOREIGN KEY (itemID) REFERENCES items (itemID)
     )
 """)
-       
+
 
 # create items if they do not already exist
 # Sample nuts
@@ -155,6 +155,7 @@ for c in "╚══════╝╚═╝ ╚═════╝╚═╝  ╚�
         print("\033[0m\033[37m" + c, end="")
 print("\033[0m")
 
+
 def startMenu():
     while (1):
         # Menu
@@ -185,7 +186,7 @@ def startMenu():
 
 
 def userSettings():
-    #create instance or order
+    # create instance or order
     ord = Order(user.id)
 
     while (user.loggedIn):
