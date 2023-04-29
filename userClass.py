@@ -36,7 +36,7 @@ class User:
         if pwd == cur.fetchone()[0]:
             cur.execute("DELETE FROM customers WHERE userID = ?",(self.id,))
             cur.execute("DELETE FROM shipping WHERE userID = ?",(self.id,))
-            cur.execute("DELETE FROM payment WHERE userID = ?,"(self.id,))
+            cur.execute("DELETE FROM payment WHERE userID = ?",(self.id,))
             cur.execute("DELETE FROM orders WHERE userID = ?",(self.id,))
             cur.execute("DETELE FROM cart WHERE userID = ?",(self.id,))
             con.commit()
