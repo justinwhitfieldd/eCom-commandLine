@@ -38,7 +38,7 @@ class User:
             cur.execute("DELETE FROM shipping WHERE userID = ?",(self.id,))
             cur.execute("DELETE FROM payment WHERE userID = ?",(self.id,))
             cur.execute("DELETE FROM orders WHERE userID = ?",(self.id,))
-            cur.execute("DETELE FROM cart WHERE userID = ?",(self.id,))
+            cur.execute("DELETE FROM cart WHERE userID = ?",(self.id,))
             con.commit()
             self.id = None
             self.loggedIn = False
