@@ -21,7 +21,7 @@ class User:
             else:
                 print("Email already in use.")
 
-        pwd = input("Passsord: ")
+        pwd = input("Password: ")
         fname = input("First Name: ")
         lname = input("Last Name: ")
 
@@ -36,7 +36,9 @@ class User:
         if pwd == cur.fetchone()[0]:
             cur.execute("DELETE FROM customers WHERE userID = ?",(self.id,))
             cur.execute("DELETE FROM shipping WHERE userID = ?",(self.id,))
+            cur.execute("DELETE FROM payment WHERE userID = ?,"(self.id,))
             cur.execute("DELETE FROM orders WHERE userID = ?",(self.id,))
+            cur.execute("DETELE FROM cart WHERE userID = ?",(self.id,))
             con.commit()
             self.id = None
             self.loggedIn = False
@@ -123,7 +125,7 @@ class User:
 
         # Prompt user to input new payment info
         print("Please enter your payment type, card number, and CVV")
-        cardType = input("Card Type (Debit or Credit): ")
+        cardType = input("Card Type (Debit, Credit, or PayPal): ")
         cardNum = input("Card Number: ")
         cvv = input("CVV: ")
 
