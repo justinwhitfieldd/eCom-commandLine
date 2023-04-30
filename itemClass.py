@@ -20,7 +20,7 @@ class Item:
 
     def __str__(self):
         nl = '\n'
-        return f"{nl}ID: {self.itemID}{nl}Name: {self.itemName}{nl}{self.desc}{nl}{nl}In Stock: {self.quantity}{nl}Price: ${self.itemID}"
+        return f"{nl}ID: {self.itemID}{nl}Name: {self.itemName}{nl}{self.desc}{nl}{nl}In Stock: {self.quantity}{nl}Price: ${self.price}"
 
     def setName(self, name):
         self.itemName = name
